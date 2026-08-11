@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { buildSajuPrompt } from './prompts/buildSajuPrompt'
 import { askGemini } from './api/gemini'
+import { parseResultBlocks, renderRichText } from './utils/formatSajuResult'
 
 function App() {
   // --- 각 입력값을 저장하는 상태 ---
@@ -74,6 +75,9 @@ function App() {
     gender &&
     calendarType
 
+  // 결과 글을 제목 / 문단 / 글머리 목록으로 나눕니다.
+  const resultBlocks = result ? parseResultBlocks(result) : []
+
   const handleAnalyze = async () => {
     if (!isFormReady) {
       setError('모든 항목을 입력해 주세요.')
@@ -104,6 +108,22 @@ function App() {
 
   return (
     <div className="page">
+      {/* 몽환적인 배경 레이어 (장식용) */}
+      <div className="atmosphere" aria-hidden="true">
+        <span className="mist mist-a" />
+        <span className="mist mist-b" />
+        <span className="mist mist-c" />
+        <span className="orb orb-a" />
+        <span className="orb orb-b" />
+        <span className="orb orb-c" />
+        <span className="star star-1" />
+        <span className="star star-2" />
+        <span className="star star-3" />
+        <span className="star star-4" />
+        <span className="star star-5" />
+        <span className="star star-6" />
+      </div>
+
       {/* 분석 중 전체 화면 로딩 오버레이 */}
       {isLoading && (
         <div className="loading-overlay" role="status" aria-live="polite">
@@ -269,14 +289,62 @@ function App() {
         </section>
 
         {error && <p className="error">{error}</p>}
-
-        {result && (
-          <section className="result" aria-label="사주 해석 결과">
-            <h2>사주 해석</h2>
-            <pre>{result}</pre>
-          </section>
-        )}
       </main>
+
+      {result && (
+        <section className="result" aria-label="사주 해석 결과">
+          <div className="result-header">
+            <p className="result-eyebrow">사주 해석</p>
+            <h2 className="result-title">
+              {name ? `${name}님의 기운` : '당신의 기운'}
+            </h2>
+            <p className="result-meta">
+              {birthDateLabel}
+              {birthTime ? ` · ${birthTime}` : ''}
+              {calendarLabel !== '(아직 선택 없음)'
+                ? ` · ${calendarLabel}`
+                : ''}
+            </p>
+            <div className="result-ornament" aria-hidden="true">
+              <span />
+              <span className="result-ornament-dot" />
+              <span />
+            </div>
+          </div>
+
+          <div className="result-body">
+            {resultBlocks.map((block, index) => {
+              if (block.type === 'heading') {
+                const HeadingTag = block.level === 1 ? 'h3' : 'h4'
+                return (
+                  <HeadingTag
+                    key={index}
+                    className={`result-heading result-heading-${block.level}`}
+                  >
+                    {renderRichText(block.text)}
+                  </HeadingTag>
+                )
+              }
+
+              if (block.type === 'list') {
+                return (
+                  <ul key={index} className="result-list">
+                    {block.items.map((item, itemIndex) => (
+                      <li key={itemIndex}>{renderRichText(item)}</li>
+                    ))}
+                  </ul>
+                )
+              }
+
+              return (
+                <p key={index} className="result-paragraph">
+                  {renderRichText(block.text)}
+                </p>
+              )
+            })}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
