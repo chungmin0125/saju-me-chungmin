@@ -1,62 +1,47 @@
 /**
  * Gemini API에게 프롬프트를 보내고, 텍스트 답변을 받아오는 함수입니다.
  *
- * - 로컬(npm run dev): .env의 VITE_GEMINI_API_KEY + Vite 프록시
- * - 배포(Vercel): /api/saju 서버리스 함수가 서버에서 키를 읽어 호출
+ * - 로컬(npm run dev): Vite 프록시(/api/gemini) 사용
+ * - 배포(Netlify / Vercel 등): Google API에 직접 요청
+ *   → 플랫폼별 서버리스 함수 없이 동작합니다.
+ *
+ * 배포 사이트 Environment Variables에
+ * VITE_GEMINI_API_KEY 를 넣고 **다시 빌드/배포** 해야 합니다.
  */
 async function readJsonSafe(response) {
   const raw = await response.text()
   try {
     return JSON.parse(raw)
   } catch {
-    // HTML 404 페이지 등이 온 경우 (예: "The page could not be found")
     throw new Error(
-      `서버가 JSON 대신 다른 응답을 반환했습니다. (/api/saju 상태: ${response.status}) 최신 코드가 Vercel에 배포됐는지 확인해 주세요.`
+      `API 응답을 읽지 못했습니다. (상태: ${response.status}) VITE_GEMINI_API_KEY가 배포 환경에 설정됐는지 확인해 주세요.`
     )
   }
 }
 
 export async function askGemini(prompt) {
-  // ----- 배포(Vercel) -----
-  if (!import.meta.env.DEV) {
-    let response
-    try {
-      response = await fetch('/api/saju', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
-      })
-    } catch {
-      throw new Error('네트워크 요청에 실패했습니다.')
-    }
-
-    const data = await readJsonSafe(response)
-    if (!response.ok) {
-      throw new Error(data?.error || '사주 분석 요청에 실패했습니다.')
-    }
-    if (!data?.text) {
-      throw new Error('Gemini가 빈 답변을 반환했습니다.')
-    }
-    return data.text
-  }
-
-  // ----- 로컬 개발 -----
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY
 
   if (!apiKey) {
     throw new Error(
-      'VITE_GEMINI_API_KEY가 없습니다. .env 파일을 확인하고 npm run dev를 다시 시작해 주세요.'
+      'VITE_GEMINI_API_KEY가 없습니다. 로컬은 .env + npm run dev 재시작, 배포는 Environment Variables에 키를 넣고 다시 배포해 주세요.'
     )
   }
 
   const model = 'gemini-3.6-flash'
-  const url = `/api/gemini/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
+
+  // 로컬만 프록시, 배포(Netlify/Vercel)는 Google 직접 호출
+  const url = import.meta.env.DEV
+    ? `/api/gemini/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
+    : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
 
   let response
   try {
     response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         contents: [
           {
@@ -67,9 +52,7 @@ export async function askGemini(prompt) {
       }),
     })
   } catch {
-    throw new Error(
-      '네트워크 요청에 실패했습니다. npm run dev를 재시작한 뒤 다시 시도해 주세요.'
-    )
+    throw new Error('네트워크 요청에 실패했습니다. 인터넷 연결을 확인해 주세요.')
   }
 
   const data = await readJsonSafe(response)
