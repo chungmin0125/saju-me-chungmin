@@ -37,14 +37,15 @@ VITE_GEMINI_API_KEY=여기에_발급한_키
 `.env`를 수정한 뒤에는 `npm run dev`를 **다시 시작**해야 합니다.
 
 #### Netlify / Vercel 배포
-1. 사이트 Environment Variables에 추가:
-   - Key: `VITE_GEMINI_API_KEY`
-   - Value: Google AI Studio 키
-2. 이 저장소를 연결해 배포 (Build: `npm run build`, Publish: `dist`)
-3. 키를 추가/변경한 뒤에는 **반드시 다시 배포** (Vite는 빌드 때 키를 넣음)
+1. Environment Variables에 **이름 정확히** 추가:
+   - `VITE_GEMINI_API_KEY` = AI Studio 키  
+   - (또는 `GEMINI_API_KEY` 도 가능)
+2. **Clear cache and deploy / Redeploy** 로 다시 빌드  
+   (키는 빌드할 때 들어갑니다. 저장만 하고 재배포 안 하면 이전과 같습니다.)
+3. Build command: `npm run build` / Publish: `dist`
 
-> `npm run dev`는 **내 컴퓨터 로컬 전용**입니다.  
-> Netlify/Vercel 배포 사이트에서는 실행하지 않습니다.
+> `npm run dev`는 로컬 전용입니다. 배포 사이트에서는 쓰지 않습니다.  
+> 로컬에서 이 메시지가 나오면: `.env` 확인 → 터미널에서 서버 종료(`Ctrl+C`) → `npm run dev` 다시 실행.
 
 ## 기술 스택
 
