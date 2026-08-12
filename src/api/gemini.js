@@ -4,9 +4,20 @@
  * - 로컬(npm run dev): .env의 VITE_GEMINI_API_KEY + Vite 프록시
  * - 배포(Vercel): /api/saju 서버리스 함수가 서버에서 키를 읽어 호출
  */
+async function readJsonSafe(response) {
+  const raw = await response.text()
+  try {
+    return JSON.parse(raw)
+  } catch {
+    // HTML 404 페이지 등이 온 경우 (예: "The page could not be found")
+    throw new Error(
+      `서버가 JSON 대신 다른 응답을 반환했습니다. (/api/saju 상태: ${response.status}) 최신 코드가 Vercel에 배포됐는지 확인해 주세요.`
+    )
+  }
+}
+
 export async function askGemini(prompt) {
   // ----- 배포(Vercel) -----
-  // 브라우저에 키를 넣지 않고, 서버 함수로 보냅니다.
   if (!import.meta.env.DEV) {
     let response
     try {
@@ -19,7 +30,7 @@ export async function askGemini(prompt) {
       throw new Error('네트워크 요청에 실패했습니다.')
     }
 
-    const data = await response.json()
+    const data = await readJsonSafe(response)
     if (!response.ok) {
       throw new Error(data?.error || '사주 분석 요청에 실패했습니다.')
     }
@@ -61,7 +72,7 @@ export async function askGemini(prompt) {
     )
   }
 
-  const data = await response.json()
+  const data = await readJsonSafe(response)
 
   if (!response.ok) {
     const message = data?.error?.message || 'Gemini API 요청에 실패했습니다.'

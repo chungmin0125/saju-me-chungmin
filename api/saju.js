@@ -1,38 +1,45 @@
-/**
- * Vercel 서버리스 함수
- * 브라우저 → /api/saju → Google Gemini
- *
- * 키는 Vercel Environment Variables에서 읽습니다.
- * (GEMINI_API_KEY 또는 VITE_GEMINI_API_KEY)
- */
-export default async function handler(req, res) {
-  // CORS (같은 도메인이면 사실상 필요 없지만 안전하게)
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+export const config = {
+  runtime: 'edge',
+}
 
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end()
+/**
+ * Vercel Edge Function
+ * POST /api/saju  { "prompt": "..." }  →  { "text": "..." }
+ */
+export default async function handler(request) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders(),
+    })
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'POST만 허용됩니다.' })
+  if (request.method !== 'POST') {
+    return json({ error: 'POST만 허용됩니다.' }, 405)
   }
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY
 
   if (!apiKey) {
-    return res.status(500).json({
-      error:
-        '서버에 API 키가 없습니다. Vercel Environment Variables에 GEMINI_API_KEY 또는 VITE_GEMINI_API_KEY를 추가한 뒤 Redeploy 하세요.',
-    })
+    return json(
+      {
+        error:
+          '서버에 API 키가 없습니다. Vercel Environment Variables에 GEMINI_API_KEY 를 추가한 뒤 Redeploy 하세요.',
+      },
+      500
+    )
   }
 
-  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-  const prompt = body?.prompt
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return json({ error: '잘못된 JSON 본문입니다.' }, 400)
+  }
 
+  const prompt = body?.prompt
   if (!prompt || typeof prompt !== 'string') {
-    return res.status(400).json({ error: 'prompt가 필요합니다.' })
+    return json({ error: 'prompt가 필요합니다.' }, 400)
   }
 
   const model = 'gemini-3.6-flash'
@@ -55,9 +62,12 @@ export default async function handler(req, res) {
     const data = await geminiRes.json()
 
     if (!geminiRes.ok) {
-      return res.status(geminiRes.status).json({
-        error: data?.error?.message || 'Gemini API 요청에 실패했습니다.',
-      })
+      return json(
+        {
+          error: data?.error?.message || 'Gemini API 요청에 실패했습니다.',
+        },
+        geminiRes.status
+      )
     }
 
     const text = data?.candidates?.[0]?.content?.parts
@@ -67,13 +77,34 @@ export default async function handler(req, res) {
       .trim()
 
     if (!text) {
-      return res.status(502).json({ error: 'Gemini가 빈 답변을 반환했습니다.' })
+      return json({ error: 'Gemini가 빈 답변을 반환했습니다.' }, 502)
     }
 
-    return res.status(200).json({ text })
+    return json({ text }, 200)
   } catch (err) {
-    return res.status(500).json({
-      error: err?.message || '서버에서 Gemini 호출 중 오류가 발생했습니다.',
-    })
+    return json(
+      {
+        error: err?.message || '서버에서 Gemini 호출 중 오류가 발생했습니다.',
+      },
+      500
+    )
   }
+}
+
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  }
+}
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      ...corsHeaders(),
+    },
+  })
 }
