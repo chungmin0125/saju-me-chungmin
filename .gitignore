@@ -26,6 +26,9 @@ dist-ssr
 *database pw*
 *database*pw*.txt
 
+# Google OAuth 클라이언트 시크릿
+client_secret*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

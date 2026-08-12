@@ -50,6 +50,10 @@ function App() {
   const [readings, setReadings] = useState([])
   const [selectedReadingId, setSelectedReadingId] = useState(null)
 
+  // --- 구글 로그인 세션 ---
+  const [user, setUser] = useState(null)
+  const [authReady, setAuthReady] = useState(false)
+
   // --- 다크모드 상태 (localStorage에 저장해서 새로고침해도 유지) ---
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('saju-theme')
@@ -66,6 +70,28 @@ function App() {
     localStorage.setItem('saju-theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
+  useEffect(() => {
+    let mounted = true
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return
+      setUser(data.session?.user ?? null)
+      setAuthReady(true)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setAuthReady(true)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
   const maxDay = daysInMonth(birthYear, birthMonth)
 
   // 월/연이 바뀌어 일수가 줄어들면 잘못된 일 선택을 비웁니다.
@@ -76,9 +102,15 @@ function App() {
   }, [birthDay, maxDay])
 
   const loadReadings = async () => {
+    if (!user) {
+      setReadings([])
+      return
+    }
+
     const { data, error: fetchError } = await supabase
       .from('saju_readings')
       .select('id, name, birth_date, created_at')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
     if (fetchError) {
@@ -90,8 +122,41 @@ function App() {
   }
 
   useEffect(() => {
+    if (!authReady) return
+    if (!user) {
+      setReadings([])
+      setSelectedReadingId(null)
+      return
+    }
     loadReadings()
-  }, [])
+  }, [authReady, user])
+
+  const handleGoogleLogin = async () => {
+    setError('')
+    const { error: loginError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    })
+    if (loginError) {
+      console.error(loginError)
+      setError('구글 로그인에 실패했습니다.')
+    }
+  }
+
+  const handleLogout = async () => {
+    setError('')
+    const { error: logoutError } = await supabase.auth.signOut()
+    if (logoutError) {
+      console.error(logoutError)
+      setError('로그아웃에 실패했습니다.')
+      return
+    }
+    setReadings([])
+    setSelectedReadingId(null)
+    setResult('')
+  }
 
   const handleSelectReading = async (readingId) => {
     setError('')
@@ -169,6 +234,10 @@ function App() {
   const resultBlocks = result ? parseResultBlocks(result) : []
 
   const handleAnalyze = async () => {
+    if (!user) {
+      setError('구글 로그인 후 사주를 저장할 수 있습니다.')
+      return
+    }
     if (!isFormReady) {
       setError('모든 항목을 입력해 주세요.')
       return
@@ -194,6 +263,7 @@ function App() {
       scrollToResult()
 
       const payload = {
+        user_id: user.id,
         name,
         birth_year: birthYear,
         birth_month: birthMonth,
@@ -211,6 +281,7 @@ function App() {
           .from('saju_readings')
           .update(payload)
           .eq('id', editingId)
+          .eq('user_id', user.id)
 
         if (updateError) {
           console.error(updateError)
@@ -245,7 +316,7 @@ function App() {
     if (e.key !== 'Enter') return
     if (e.target.tagName === 'TEXTAREA') return
     e.preventDefault()
-    if (!isLoading && isFormReady) {
+    if (!isLoading && isFormReady && user) {
       handleAnalyze()
     }
   }
@@ -269,6 +340,7 @@ function App() {
   }
 
   const readingPayload = () => ({
+    user_id: user.id,
     name,
     birth_year: birthYear,
     birth_month: birthMonth,
@@ -282,7 +354,7 @@ function App() {
 
   // Update: 선택된 기록의 입력값·결과를 현재 폼 내용으로 수정
   const handleUpdateReading = async () => {
-    if (!selectedReadingId) return
+    if (!user || !selectedReadingId) return
     if (!isFormReady || !result) {
       setError('수정하려면 입력과 사주 결과가 모두 있어야 합니다.')
       return
@@ -293,6 +365,7 @@ function App() {
       .from('saju_readings')
       .update(readingPayload())
       .eq('id', selectedReadingId)
+      .eq('user_id', user.id)
 
     if (updateError) {
       console.error(updateError)
@@ -305,6 +378,7 @@ function App() {
 
   // Delete: 선택된 기록(또는 사이드바에서 지정한 기록) 삭제
   const handleDeleteReading = async (readingId) => {
+    if (!user) return
     const id = readingId ?? selectedReadingId
     if (!id) return
 
@@ -316,6 +390,7 @@ function App() {
       .from('saju_readings')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (deleteError) {
       console.error(deleteError)
@@ -329,13 +404,26 @@ function App() {
     await loadReadings()
   }
 
+  const userLabel =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email ||
+    '로그인됨'
+
   return (
     <div className="page">
       {/* 몽환적인 배경 레이어 (장식용) */}
       <div className="atmosphere" aria-hidden="true">
-        <span className="mist mist-a" />
-        <span className="mist mist-b" />
-        <span className="mist mist-c" />
+        <span className="space-dust" />
+        <span className="nebula nebula-a" />
+        <span className="nebula nebula-b" />
+        <span className="nebula nebula-c" />
+        <span className="blackhole">
+          <span className="blackhole-halo" />
+          <span className="blackhole-disk" />
+          <span className="blackhole-core" />
+          <span className="blackhole-shine" />
+        </span>
         <span className="orb orb-a" />
         <span className="orb orb-b" />
         <span className="orb orb-c" />
@@ -345,6 +433,12 @@ function App() {
         <span className="star star-4" />
         <span className="star star-5" />
         <span className="star star-6" />
+        <span className="star star-7" />
+        <span className="star star-8" />
+        <span className="star star-9" />
+        <span className="star star-10" />
+        <span className="star star-11" />
+        <span className="star star-12" />
       </div>
 
       {/* 분석 중 전체 화면 로딩 오버레이 */}
@@ -365,17 +459,19 @@ function App() {
 
       <aside className="history-sidebar" aria-label="저장된 사주 기록">
         <div className="history-header">
-          <h2 className="history-title">기록</h2>
+          <h2 className="history-title">내 기록</h2>
           <button
             type="button"
             className="new-saju-btn"
             onClick={handleNewSaju}
-            disabled={isLoading}
+            disabled={isLoading || !user}
           >
             새 사주
           </button>
         </div>
-        {readings.length === 0 ? (
+        {!user ? (
+          <p className="history-empty">로그인하면 내 사주 기록이 여기에 모입니다.</p>
+        ) : readings.length === 0 ? (
           <p className="history-empty">아직 저장된 이름이 없습니다.</p>
         ) : (
           <ul className="history-list">
@@ -400,7 +496,7 @@ function App() {
                   className="history-delete-btn"
                   aria-label={`${reading.name} 기록 삭제`}
                   title="삭제"
-                  disabled={isLoading}
+                  disabled={isLoading || !user}
                   onClick={(e) => {
                     e.stopPropagation()
                     handleDeleteReading(reading.id)
@@ -416,14 +512,41 @@ function App() {
 
       <header className="topbar">
         <p className="brand">사주미</p>
-        <button
-          type="button"
-          className="theme-toggle"
-          onClick={() => setIsDark((prev) => !prev)}
-          aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
-        >
-          {isDark ? '라이트' : '다크'}
-        </button>
+        <div className="topbar-actions">
+          {authReady &&
+            (user ? (
+              <>
+                <span className="user-chip" title={user.email || ''}>
+                  {userLabel}
+                </span>
+                <button
+                  type="button"
+                  className="auth-btn"
+                  onClick={handleLogout}
+                  disabled={isLoading}
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="auth-btn auth-btn-google"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+              >
+                Google 로그인
+              </button>
+            ))}
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => setIsDark((prev) => !prev)}
+            aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          >
+            {isDark ? '라이트' : '다크'}
+          </button>
+        </div>
       </header>
 
       <main className="app">
@@ -432,7 +555,20 @@ function App() {
           <p className="hero-sub">출생 정보로 성격과 기질을 읽어 드립니다.</p>
         </section>
 
-        {selectedReadingId && (
+        {authReady && !user && (
+          <div className="login-gate" role="status">
+            <p>구글 계정으로 로그인하면 사주 결과가 내 계정에만 저장됩니다.</p>
+            <button
+              type="button"
+              className="auth-btn auth-btn-google"
+              onClick={handleGoogleLogin}
+            >
+              Google로 계속하기
+            </button>
+          </div>
+        )}
+
+        {selectedReadingId && user && (
           <div className="viewing-badge" role="status">
             <span>저장된 기록 보는 중</span>
             <div className="viewing-badge-actions">
@@ -448,7 +584,7 @@ function App() {
                 type="button"
                 className="viewing-badge-action is-danger"
                 onClick={() => handleDeleteReading(selectedReadingId)}
-                disabled={isLoading}
+                disabled={isLoading || !user}
               >
                 삭제
               </button>
@@ -456,7 +592,7 @@ function App() {
                 type="button"
                 className="viewing-badge-action"
                 onClick={handleNewSaju}
-                disabled={isLoading}
+                disabled={isLoading || !user}
               >
                 새 사주
               </button>
@@ -477,7 +613,7 @@ function App() {
               value={name}
               onChange={handleNameChange}
               placeholder="이름을 입력하세요"
-              disabled={isLoading}
+              disabled={isLoading || !user}
             />
           </div>
 
@@ -500,7 +636,7 @@ function App() {
                   placeholder="1998"
                   value={birthYear}
                   onChange={handleBirthYearChange}
-                  disabled={isLoading}
+                  disabled={isLoading || !user}
                 />
               </div>
               <div className="birth-part">
@@ -509,7 +645,7 @@ function App() {
                   id="birthMonth"
                   value={birthMonth}
                   onChange={handleBirthMonthChange}
-                  disabled={isLoading}
+                  disabled={isLoading || !user}
                 >
                   <option value="">월</option>
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -525,7 +661,7 @@ function App() {
                   id="birthDay"
                   value={birthDay}
                   onChange={handleBirthDayChange}
-                  disabled={isLoading}
+                  disabled={isLoading || !user}
                 >
                   <option value="">일</option>
                   {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
@@ -545,7 +681,7 @@ function App() {
               type="time"
               value={birthTime}
               onChange={handleBirthTimeChange}
-              disabled={isLoading}
+              disabled={isLoading || !user}
             />
           </div>
 
@@ -556,7 +692,7 @@ function App() {
                 id="gender"
                 value={gender}
                 onChange={handleGenderChange}
-                disabled={isLoading}
+                disabled={isLoading || !user}
               >
                 <option value="">선택하세요</option>
                 <option value="male">남성</option>
@@ -570,7 +706,7 @@ function App() {
                 id="calendarType"
                 value={calendarType}
                 onChange={handleCalendarTypeChange}
-                disabled={isLoading}
+                disabled={isLoading || !user}
               >
                 <option value="">선택하세요</option>
                 <option value="solar">양력</option>
@@ -584,11 +720,14 @@ function App() {
               type="button"
               className="analyze-btn"
               onClick={handleAnalyze}
-              disabled={isLoading || !isFormReady}
+              disabled={isLoading || !isFormReady || !user}
             >
               {selectedReadingId ? '다시 분석하기' : '사주 보기'}
             </button>
-            {!isFormReady && !isLoading && (
+            {!user && authReady && (
+              <p className="form-hint">저장하려면 먼저 Google 로그인을 해 주세요</p>
+            )}
+            {user && !isFormReady && !isLoading && (
               <p className="form-hint">{missingHint}</p>
             )}
             {selectedReadingId && (
@@ -605,7 +744,7 @@ function App() {
               type="button"
               className="clear-btn"
               onClick={handleNewSaju}
-              disabled={isLoading}
+              disabled={isLoading || !user}
             >
               입력 비우기
             </button>
@@ -687,7 +826,7 @@ function App() {
                   type="button"
                   className="result-delete-btn"
                   onClick={() => handleDeleteReading(selectedReadingId)}
-                  disabled={isLoading}
+                  disabled={isLoading || !user}
                 >
                   이 기록 삭제
                 </button>
@@ -697,7 +836,7 @@ function App() {
               type="button"
               className="result-new-btn"
               onClick={handleNewSaju}
-              disabled={isLoading}
+              disabled={isLoading || !user}
             >
               새 사주 만들기
             </button>
