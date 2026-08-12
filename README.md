@@ -27,14 +27,26 @@ npm run dev
 
 ### API 키 설정
 
+#### 로컬
 프로젝트 루트에 `.env` 파일을 만들고 아래처럼 작성합니다.
 
 ```env
 VITE_GEMINI_API_KEY=여기에_발급한_키
 ```
 
-키는 [Google AI Studio](https://aistudio.google.com/apikey)에서 발급할 수 있습니다.  
-`.env`를 수정한 뒤에는 개발 서버를 다시 시작해야 합니다.
+`.env`를 수정한 뒤에는 `npm run dev`를 **다시 시작**해야 합니다.
+
+#### Vercel 배포
+1. Vercel 프로젝트 → **Settings** → **Environment Variables**
+2. 아래 중 **하나** 추가 (둘 다 있어도 됨):
+   - `GEMINI_API_KEY` = AI Studio 키  ← 권장
+   - 또는 `VITE_GEMINI_API_KEY` = AI Studio 키
+3. Environment: Production, Preview, Development 모두 선택
+4. 이 코드 변경을 GitHub에 푸시한 뒤 Vercel이 다시 배포되게 하거나 **Redeploy**
+5. 배포가 끝난 뒤 사이트에서 다시 테스트
+
+> 배포 환경에서는 `/api/saju` 서버 함수가 키를 읽습니다.  
+> 예전에 키만 넣고 Redeploy 했는데도 안 됐다면, **이 API 코드가 포함된 최신 커밋**이 배포됐는지 확인하세요.
 
 ## 기술 스택
 
