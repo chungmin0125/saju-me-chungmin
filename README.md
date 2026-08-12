@@ -44,6 +44,12 @@ VITE_GEMINI_API_KEY=여기에_발급한_키
    (키는 빌드할 때 들어갑니다. 저장만 하고 재배포 안 하면 이전과 같습니다.)
 3. Build command: `npm run build` / Publish: `dist`
 
+**Netlify만 안 될 때 (중요)**  
+Site configuration → Environment variables → `VITE_GEMINI_API_KEY` 편집에서  
+**Scopes에 `Builds`가 체크**되어 있는지 확인하세요.  
+`Runtime`만 켜져 있으면 Vite 빌드에 키가 안 들어가서 이 오류가 납니다.  
+수정 후 **Clear cache and deploy** 하세요.
+
 > `npm run dev`는 로컬 전용입니다. 배포 사이트에서는 쓰지 않습니다.  
 > 로컬에서 이 메시지가 나오면: `.env` 확인 → 터미널에서 서버 종료(`Ctrl+C`) → `npm run dev` 다시 실행.
 

@@ -22,6 +22,10 @@ dist-ssr
 .env.*
 !.env.example
 
+# Supabase / DB 비밀
+*database pw*
+*database*pw*.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
