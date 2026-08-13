@@ -8,6 +8,8 @@
  * 배포 사이트 Environment Variables에
  * VITE_GEMINI_API_KEY 를 넣고 **다시 빌드/배포** 해야 합니다.
  */
+import { publicEnv } from '../config/publicEnv'
+
 async function readJsonSafe(response) {
   const raw = await response.text()
   try {
@@ -20,11 +22,11 @@ async function readJsonSafe(response) {
 }
 
 export async function askGemini(prompt) {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY
+  const apiKey = publicEnv.geminiApiKey
 
   if (!apiKey) {
     throw new Error(
-      'VITE_GEMINI_API_KEY가 없습니다. 로컬은 .env + npm run dev 재시작, 배포는 Environment Variables에 키를 넣고 다시 배포해 주세요.'
+      'VITE_GEMINI_API_KEY가 없습니다. 로컬은 .env + npm run dev 재시작, 배포는 Vercel Environment Variables에 키를 넣고 다시 배포해 주세요.'
     )
   }
 

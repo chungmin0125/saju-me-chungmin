@@ -76,7 +76,9 @@ function App() {
     if (!isSupabaseConfigured) {
       setAuthReady(true)
       setError(
-        'Supabase 환경 변수가 없습니다. .env의 VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY를 확인한 뒤 npm run dev를 다시 시작하세요.'
+        import.meta.env.PROD
+          ? 'Supabase 환경 변수가 없습니다. Vercel → Settings → Environment Variables에 VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY를 넣고 Redeploy 하세요.'
+          : 'Supabase 환경 변수가 없습니다. .env의 VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY를 확인한 뒤 npm run dev를 다시 시작하세요.'
       )
       return undefined
     }
