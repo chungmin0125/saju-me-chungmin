@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import {
   calendarLabelOf,
-  daysInMonth,
   draftToPayload,
   getMissingProfileFields,
   profileToDraft,
 } from '../utils/profile'
 import Mascot from './Mascot'
+import SajuFields from './SajuFields'
 
 export default function ProfileModal({
   mode,
@@ -32,25 +32,11 @@ export default function ProfileModal({
     setError('')
   }, [initialProfile, suggestedName, mode])
 
-  const maxDay = daysInMonth(draft.birthYear, draft.birthMonth)
-
-  useEffect(() => {
-    if (draft.birthDay && Number(draft.birthDay) > maxDay) {
-      setDraft((prev) => ({ ...prev, birthDay: '' }))
-    }
-  }, [draft.birthDay, maxDay])
-
   const missingFields = getMissingProfileFields(draft)
   const isReady = missingFields.length === 0
   const missingHint = isReady
     ? ''
     : `${missingFields.join(' · ')}을(를) 입력해 주세요`
-
-  const updateField = (key) => (e) => {
-    let value = e.target.value
-    if (key === 'birthYear') value = value.replace(/\D/g, '').slice(0, 4)
-    setDraft((prev) => ({ ...prev, [key]: value }))
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -95,114 +81,13 @@ export default function ProfileModal({
         </p>
 
         <form className="modal-form" onSubmit={handleSubmit}>
-          <div className="field">
-            <label htmlFor="profile-name">이름</label>
-            <input
-              id="profile-name"
-              type="text"
-              value={draft.name}
-              onChange={updateField('name')}
-              placeholder="이름을 입력하세요"
-              disabled={saving}
-              autoFocus
-            />
-          </div>
-
-          <div className="field">
-            <span className="field-group-label" id="profile-birth-label">
-              생년월일
-            </span>
-            <div
-              className="birth-row"
-              role="group"
-              aria-labelledby="profile-birth-label"
-            >
-              <div className="birth-part">
-                <label htmlFor="profile-birthYear">연</label>
-                <input
-                  id="profile-birthYear"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="1998"
-                  value={draft.birthYear}
-                  onChange={updateField('birthYear')}
-                  disabled={saving}
-                />
-              </div>
-              <div className="birth-part">
-                <label htmlFor="profile-birthMonth">월</label>
-                <select
-                  id="profile-birthMonth"
-                  value={draft.birthMonth}
-                  onChange={updateField('birthMonth')}
-                  disabled={saving}
-                >
-                  <option value="">월</option>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="birth-part">
-                <label htmlFor="profile-birthDay">일</label>
-                <select
-                  id="profile-birthDay"
-                  value={draft.birthDay}
-                  onChange={updateField('birthDay')}
-                  disabled={saving}
-                >
-                  <option value="">일</option>
-                  {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="field">
-            <label htmlFor="profile-birthTime">태어난 시간</label>
-            <input
-              id="profile-birthTime"
-              type="time"
-              value={draft.birthTime}
-              onChange={updateField('birthTime')}
-              disabled={saving}
-            />
-          </div>
-
-          <div className="field-row">
-            <div className="field">
-              <label htmlFor="profile-gender">성별</label>
-              <select
-                id="profile-gender"
-                value={draft.gender}
-                onChange={updateField('gender')}
-                disabled={saving}
-              >
-                <option value="">선택하세요</option>
-                <option value="male">남성</option>
-                <option value="female">여성</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="profile-calendarType">양력 / 음력</label>
-              <select
-                id="profile-calendarType"
-                value={draft.calendarType}
-                onChange={updateField('calendarType')}
-                disabled={saving}
-              >
-                <option value="">선택하세요</option>
-                <option value="solar">양력</option>
-                <option value="lunar">음력</option>
-              </select>
-            </div>
-          </div>
+          <SajuFields
+            idPrefix="profile"
+            draft={draft}
+            onChange={setDraft}
+            disabled={saving}
+            autoFocus
+          />
 
           {!isReady && <p className="form-hint">{missingHint}</p>}
           {error && <p className="error">{error}</p>}

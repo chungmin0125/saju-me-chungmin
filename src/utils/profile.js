@@ -107,3 +107,80 @@ export function draftToPayload(userId, draft) {
     updated_at: new Date().toISOString(),
   }
 }
+
+export function isDraftComplete(draft) {
+  return getMissingProfileFields(draft).length === 0
+}
+
+export function draftToProfileShape(draft) {
+  return {
+    name: draft.name?.trim() ?? '',
+    birth_year: String(draft.birthYear || ''),
+    birth_month: String(draft.birthMonth || ''),
+    birth_day: String(draft.birthDay || ''),
+    birth_date: toBirthDate(draft.birthYear, draft.birthMonth, draft.birthDay),
+    birth_time: draft.birthTime ?? '',
+    gender: draft.gender ?? '',
+    calendar_type: draft.calendarType ?? '',
+  }
+}
+
+const GUEST_DRAFT_KEY = 'saju-guest-draft'
+const GUEST_RESULT_KEY = 'saju-guest-result'
+
+export function loadGuestDraft() {
+  try {
+    const raw = localStorage.getItem(GUEST_DRAFT_KEY)
+    if (!raw) return emptyProfileDraft()
+    return { ...emptyProfileDraft(), ...JSON.parse(raw) }
+  } catch {
+    return emptyProfileDraft()
+  }
+}
+
+export function saveGuestDraft(draft) {
+  localStorage.setItem(GUEST_DRAFT_KEY, JSON.stringify(draft))
+}
+
+export function clearGuestDraft() {
+  localStorage.removeItem(GUEST_DRAFT_KEY)
+}
+
+export function loadGuestResult() {
+  return localStorage.getItem(GUEST_RESULT_KEY) || ''
+}
+
+export function saveGuestResult(text) {
+  if (!text) {
+    localStorage.removeItem(GUEST_RESULT_KEY)
+    return
+  }
+  localStorage.setItem(GUEST_RESULT_KEY, text)
+}
+
+export function clearGuestResult() {
+  localStorage.removeItem(GUEST_RESULT_KEY)
+}
+
+export function splitLockedResult(text, ratio = 0.5) {
+  const source = String(text || '')
+  if (!source) return { preview: '', locked: '' }
+
+  const target = Math.floor(source.length * ratio)
+  const windowStart = Math.max(0, target - 100)
+  const nearby = source.slice(windowStart, target + 140)
+  const breakMatch = nearby.search(/\n{2,}|\n#{1,3}\s/)
+  let cut = target
+  if (breakMatch >= 0) {
+    cut = windowStart + breakMatch
+  } else {
+    const newline = source.lastIndexOf('\n', target)
+    if (newline > target * 0.35) cut = newline
+  }
+  if (cut < 80) cut = target
+
+  return {
+    preview: source.slice(0, cut).trim(),
+    locked: source.slice(cut).trim(),
+  }
+}
