@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://saju-me-chungmin.vercel.app/sitemap.xml

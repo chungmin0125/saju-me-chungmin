@@ -2,7 +2,9 @@
 
 부트캠프 두 번째 프로젝트 — React로 만든 사주 기본 해석 웹앱입니다.
 
-Google 로그인 후 출생 정보를 한 번만 저장하면, 다음부터는 바로 Gemini API로 성격·기질·재능을 해석해 보여 줍니다.
+배포: [https://saju-me-chungmin.vercel.app/](https://saju-me-chungmin.vercel.app/)
+
+Google 로그인 후 출생 정보를 한 번만 저장하면, 다음부터는 바로 Gemini API로 성격·기질·재능을 해석해 보여 드립니다.
 
 ## 주요 기능
 
