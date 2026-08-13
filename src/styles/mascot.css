@@ -1,0 +1,78 @@
+/* ===== 마스코트 미 ===== */
+.mascot {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #0a1020;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 0 24px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.mascot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.mascot-brand {
+  width: 28px;
+  height: 28px;
+}
+
+.mascot-sm {
+  width: 52px;
+  height: 52px;
+}
+
+.mascot-md {
+  width: 72px;
+  height: 72px;
+}
+
+.mascot-lg {
+  width: min(148px, 42vw);
+  height: min(148px, 42vw);
+  animation: mascot-float 4.8s ease-in-out infinite;
+}
+
+.mascot-loading {
+  width: 92px;
+  height: 92px;
+}
+
+.mascot.is-reading {
+  animation: mascot-read 1.8s ease-in-out infinite;
+}
+
+@keyframes mascot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes mascot-read {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 0 18px color-mix(in srgb, var(--accent) 24%, transparent);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 0 28px color-mix(in srgb, var(--accent) 42%, transparent);
+  }
+}

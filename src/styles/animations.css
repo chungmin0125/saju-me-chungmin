@@ -1,0 +1,152 @@
+/* ===== 모션 ===== */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(24px, -18px, 0) scale(1.08);
+  }
+}
+
+@keyframes dust-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-18px, 12px, 0);
+  }
+}
+
+@keyframes blackhole-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes disk-spin {
+  from {
+    transform: rotateX(68deg) rotateZ(-18deg) rotate(0deg);
+  }
+  to {
+    transform: rotateX(68deg) rotateZ(-18deg) rotate(360deg);
+  }
+}
+
+@keyframes halo-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes shine-sweep {
+  0%,
+  100% {
+    opacity: 0.35;
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.9;
+    filter: blur(2px);
+  }
+}
+
+@keyframes float-orb {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-18px);
+    opacity: 0.75;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes pulse-orb {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--orb) 40%, transparent);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+@keyframes bounce-dot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-14px);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 420px) {
+  .field-row,
+  .profile-card-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 장식용 배경 움직임만 줄이고, 로딩 점은 항상 보이게 둡니다. */
+@media (prefers-reduced-motion: reduce) {
+  .nebula,
+  .space-dust,
+  .blackhole,
+  .blackhole-disk,
+  .blackhole-halo,
+  .blackhole-shine,
+  .orb,
+  .star,
+  .mascot-lg,
+  .mascot.is-reading {
+    animation: none;
+  }
+}

@@ -1,0 +1,42 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+  transition: color-scheme 0.55s ease;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  background-color: var(--bg0);
+  background-image:
+    radial-gradient(ellipse 55% 45% at 72% 28%, var(--glow-a), transparent 70%),
+    radial-gradient(ellipse 40% 35% at 18% 75%, var(--glow-b), transparent 65%),
+    radial-gradient(circle at 50% 120%, var(--glow-c), transparent 55%),
+    linear-gradient(165deg, var(--bg0), var(--bg1) 55%, var(--void));
+  background-attachment: fixed;
+  transition:
+    color 0.55s ease,
+    background-color 0.7s ease,
+    background-image 0.7s ease;
+  overflow-x: hidden;
+}
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 1.25rem 1rem 3.5rem;
+  isolation: isolate;
+  transition: color 0.55s ease;
+}

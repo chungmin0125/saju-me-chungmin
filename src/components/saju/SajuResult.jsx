@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
-import { parseResultBlocks, renderRichText } from '../utils/formatSajuResult'
-import { downloadResultImage } from '../utils/downloadResultImage'
+import { trackEvent } from '../../lib/analytics'
+import { parseResultBlocks } from '../../utils/formatSajuResult'
+import { downloadResultImage } from '../../utils/downloadResultImage'
+import ResultBody from './ResultBody'
 
 export default function SajuResult({
   result,
@@ -28,10 +30,12 @@ export default function SajuResult({
     try {
       await downloadResultImage(captureRef.current, name)
       setDownloadState('done')
+      trackEvent('download_image', { content_type: 'saju', status: 'success' })
       window.setTimeout(() => setDownloadState('idle'), 2000)
     } catch (err) {
       console.error(err)
       setDownloadState('error')
+      trackEvent('download_image', { content_type: 'saju', status: 'error' })
     }
   }
 
@@ -66,37 +70,7 @@ export default function SajuResult({
           </div>
         </div>
 
-        <div className="result-body">
-          {resultBlocks.map((block, index) => {
-            if (block.type === 'heading') {
-              const HeadingTag = block.level === 1 ? 'h3' : 'h4'
-              return (
-                <HeadingTag
-                  key={index}
-                  className={`result-heading result-heading-${block.level}`}
-                >
-                  {renderRichText(block.text)}
-                </HeadingTag>
-              )
-            }
-
-            if (block.type === 'list') {
-              return (
-                <ul key={index} className="result-list">
-                  {block.items.map((item, itemIndex) => (
-                    <li key={itemIndex}>{renderRichText(item)}</li>
-                  ))}
-                </ul>
-              )
-            }
-
-            return (
-              <p key={index} className="result-paragraph">
-                {renderRichText(block.text)}
-              </p>
-            )
-          })}
-        </div>
+        <ResultBody blocks={resultBlocks} />
 
         <p className="result-capture-brand">사주미</p>
       </div>

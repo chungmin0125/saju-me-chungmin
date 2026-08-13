@@ -1,0 +1,79 @@
+@font-face {
+  font-family: 'Ulsan Junggu';
+  src: url('../assets/fonts/ulsanjunggu.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== 테마 변수 (라이트 / 다크) ===== */
+:root,
+[data-theme='light'] {
+  --font-ui: 'IBM Plex Sans KR', sans-serif;
+  --font-display: 'Ulsan Junggu', serif;
+  --bg0: #dfe8f4;
+  --bg1: #f3f6fb;
+  --void: #c8d4e6;
+  --ink: #182433;
+  --muted: #5b6b80;
+  --line: rgba(24, 36, 51, 0.14);
+  --field-bg: rgba(255, 255, 255, 0.72);
+  --panel-bg: rgba(255, 255, 255, 0.58);
+  --accent: #1f6b5e;
+  --accent-soft: rgba(31, 107, 94, 0.14);
+  --mist-a: rgba(120, 170, 220, 0.42);
+  --mist-b: rgba(170, 150, 210, 0.28);
+  --mist-c: rgba(130, 200, 190, 0.3);
+  --orb-color: rgba(90, 170, 180, 0.4);
+  --star: rgba(60, 90, 140, 0.55);
+  --danger: #9b1c2e;
+  --overlay: rgba(30, 45, 70, 0.35);
+  --shadow: 0 20px 50px rgba(40, 60, 90, 0.12);
+  --orb: #2a8a78;
+  --result-lead: #1f6b5e;
+  --disk-hot: rgba(255, 170, 110, 0.45);
+  --disk-cool: rgba(80, 170, 200, 0.4);
+  --disk-ring: rgba(140, 120, 200, 0.22);
+  --glow-a: rgba(120, 170, 230, 0.28);
+  --glow-b: rgba(140, 200, 190, 0.18);
+  --glow-c: rgba(200, 210, 230, 0.55);
+  --on-accent: #ffffff;
+  --atmosphere-opacity: 0.72;
+  --blackhole-opacity: 0.48;
+  --blackhole-brightness: 1.2;
+  --blackhole-saturate: 0.75;
+}
+
+[data-theme='dark'] {
+  --bg0: #02040a;
+  --bg1: #0a1020;
+  --void: #000000;
+  --ink: #e8eef8;
+  --muted: #9aa8c0;
+  --line: rgba(200, 220, 255, 0.12);
+  --field-bg: rgba(10, 16, 32, 0.62);
+  --panel-bg: rgba(8, 14, 28, 0.55);
+  --accent: #7dcec0;
+  --accent-soft: rgba(125, 206, 192, 0.14);
+  --mist-a: rgba(50, 90, 180, 0.32);
+  --mist-b: rgba(100, 60, 160, 0.24);
+  --mist-c: rgba(30, 140, 150, 0.18);
+  --orb-color: rgba(125, 206, 192, 0.22);
+  --star: rgba(230, 240, 255, 0.85);
+  --danger: #ff8a9a;
+  --overlay: rgba(2, 4, 10, 0.78);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  --orb: #7dcec0;
+  --result-lead: #9ad9cd;
+  --disk-hot: rgba(255, 180, 90, 0.6);
+  --disk-cool: rgba(80, 210, 230, 0.5);
+  --disk-ring: rgba(160, 120, 255, 0.32);
+  --glow-a: rgba(90, 140, 255, 0.16);
+  --glow-b: rgba(40, 180, 170, 0.12);
+  --glow-c: rgba(20, 30, 60, 0.9);
+  --on-accent: #0d1418;
+  --atmosphere-opacity: 1;
+  --blackhole-opacity: 1;
+  --blackhole-brightness: 1;
+  --blackhole-saturate: 1;
+}

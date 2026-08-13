@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { supabase, isSupabaseConfigured } from '../../lib/supabase'
 
 export default function AnalysisCount({ refreshKey = 0 }) {
   const [count, setCount] = useState(null)

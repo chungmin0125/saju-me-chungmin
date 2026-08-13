@@ -4,9 +4,9 @@ import {
   draftToPayload,
   getMissingProfileFields,
   profileToDraft,
-} from '../utils/profile'
-import Mascot from './Mascot'
-import SajuFields from './SajuFields'
+} from '../../utils/profile'
+import Mascot from '../Mascot'
+import SajuFields from '../saju/SajuFields'
 
 export default function ProfileModal({
   mode,
@@ -45,7 +45,7 @@ export default function ProfileModal({
     setSaving(true)
     setError('')
     try {
-      await onSave(draftToPayload(userId, draft))
+      await onSave(draftToPayload(userId, draft), mode)
     } catch (err) {
       setError(err.message || '프로필 저장에 실패했습니다.')
       setSaving(false)

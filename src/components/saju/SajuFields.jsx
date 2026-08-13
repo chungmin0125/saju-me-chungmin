@@ -1,4 +1,4 @@
-import { daysInMonth } from '../utils/profile'
+import { daysInMonth } from '../../utils/profile'
 
 export default function SajuFields({
   idPrefix,

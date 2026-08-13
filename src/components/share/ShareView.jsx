@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { trackEvent } from '../../lib/analytics'
+import { fetchSharedReading } from '../../api/readings'
+import { isSupabaseConfigured } from '../../lib/supabase'
 import {
   calendarLabelOf,
   formatBirthDateLabel,
-} from '../utils/profile'
-import { copyToClipboard } from '../utils/share'
-import { useSajuTheme } from '../hooks/useSajuTheme'
-import Atmosphere from './Atmosphere'
-import Mascot from './Mascot'
-import SajuResult from './SajuResult'
+} from '../../utils/profile'
+import { copyToClipboard } from '../../utils/share'
+import { useSajuTheme } from '../../hooks/useSajuTheme'
+import Atmosphere from '../layout/Atmosphere'
+import LoadingOverlay from '../layout/LoadingOverlay'
+import Topbar from '../layout/Topbar'
+import Mascot from '../Mascot'
+import SajuResult from '../saju/SajuResult'
 
 export default function ShareView({ shareToken }) {
   const [isDark, setIsDark] = useSajuTheme()
@@ -25,6 +29,7 @@ export default function ShareView({ shareToken }) {
         if (!mounted) return
         setError('유효하지 않은 공유 링크입니다.')
         setLoading(false)
+        trackEvent('view_share', { status: 'invalid' })
         return
       }
 
@@ -35,29 +40,27 @@ export default function ShareView({ shareToken }) {
         return
       }
 
-      const { data, error: fetchError } = await supabase.rpc(
-        'get_shared_reading',
-        { share_token: shareToken }
-      )
+      try {
+        const row = await fetchSharedReading(shareToken)
+        if (!mounted) return
 
-      if (!mounted) return
+        if (!row?.result) {
+          setError('이 공유 링크는 없거나 삭제되었습니다.')
+          setLoading(false)
+          trackEvent('view_share', { status: 'not_found' })
+          return
+        }
 
-      if (fetchError) {
-        console.error(fetchError)
+        setReading(row)
+        setLoading(false)
+        trackEvent('view_share', { status: 'success' })
+      } catch (err) {
+        if (!mounted) return
+        console.error(err)
         setError('사주 결과를 불러오지 못했습니다.')
         setLoading(false)
-        return
+        trackEvent('view_share', { status: 'error' })
       }
-
-      const row = Array.isArray(data) ? data[0] : data
-      if (!row?.result) {
-        setError('이 공유 링크는 없거나 삭제되었습니다.')
-        setLoading(false)
-        return
-      }
-
-      setReading(row)
-      setLoading(false)
     }
 
     load()
@@ -71,9 +74,21 @@ export default function ShareView({ shareToken }) {
       await copyToClipboard(window.location.href)
       setShareCopied(true)
       window.setTimeout(() => setShareCopied(false), 2000)
+      trackEvent('share', {
+        method: 'link',
+        content_type: 'saju',
+        status: 'success',
+        source: 'share_page',
+      })
     } catch (err) {
       console.error(err)
       setError('링크 복사에 실패했습니다.')
+      trackEvent('share', {
+        method: 'link',
+        content_type: 'saju',
+        status: 'error',
+        source: 'share_page',
+      })
     }
   }
 
@@ -86,43 +101,28 @@ export default function ShareView({ shareToken }) {
     <div className="page is-share">
       <Atmosphere />
 
-      <header className="topbar">
-        <a className="brand" href="/">
-          <Mascot size="brand" />
-          사주미
-        </a>
-        <div className="topbar-actions">
-          <button
-            type="button"
-            className="theme-toggle"
-            onClick={() => setIsDark((prev) => !prev)}
-            aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
-          >
-            {isDark ? '라이트' : '다크'}
-          </button>
-        </div>
-      </header>
+      <Topbar
+        isDark={isDark}
+        onToggleTheme={() => setIsDark((prev) => !prev)}
+        brandHref="/"
+      />
 
       {loading && (
-        <div className="loading-overlay" role="status" aria-live="polite">
-          <div className="loading-panel">
-            <Mascot size="loading" mood="reading" />
-            <p className="loading-title">사주 결과를 불러오는 중</p>
-            <p className="loading-sub">공유된 해석을 펼치는 중…</p>
-            <div className="loading-dots" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
-          </div>
-        </div>
+        <LoadingOverlay
+          title="사주 결과를 불러오는 중"
+          sub="공유된 해석을 펼치는 중…"
+        />
       )}
 
       {!loading && error && (
         <div className="login-gate" role="status">
           <Mascot size="sm" />
           <p>{error}</p>
-          <a className="auth-btn auth-btn-google" href="/">
+          <a
+            className="auth-btn auth-btn-google"
+            href="/"
+            onClick={() => trackEvent('click_home', { source: 'share_error' })}
+          >
             사주미로 돌아가기
           </a>
         </div>
@@ -141,7 +141,12 @@ export default function ShareView({ shareToken }) {
             onShare={handleShare}
           />
           <p className="share-home-link">
-            <a href="/">사주미에서 내 사주 보기</a>
+            <a
+              href="/"
+              onClick={() => trackEvent('click_home', { source: 'share_page' })}
+            >
+              사주미에서 내 사주 보기
+            </a>
           </p>
         </>
       )}
