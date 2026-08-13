@@ -33,13 +33,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    // 배포 환경에서도 프론트에서 같은 이름으로 읽히게 고정
+    envDir: process.cwd(),
+    // Gemini만 별칭(GEMINI_API_KEY)을 지원.
+    // Supabase VITE_* 는 define으로 덮지 않음 — 빈 값으로 고정되면 "환경 변수 없음" 오류가 납니다.
     define: {
       'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(geminiKey),
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabaseUrl),
-      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
-        supabasePublishableKey
-      ),
     },
     // 로컬: 브라우저 → Vite 프록시 → Google API (CORS 우회)
     server: {
