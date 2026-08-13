@@ -3,7 +3,7 @@ import './App.css'
 import { buildSajuPrompt } from './prompts/buildSajuPrompt'
 import { askGemini } from './api/gemini'
 import { parseResultBlocks, renderRichText } from './utils/formatSajuResult'
-import { supabase } from './lib/supabase'
+import { supabase, isSupabaseConfigured } from './lib/supabase'
 
 function daysInMonth(year, month) {
   const y = Number(year)
@@ -72,6 +72,14 @@ function App() {
 
   useEffect(() => {
     let mounted = true
+
+    if (!isSupabaseConfigured) {
+      setAuthReady(true)
+      setError(
+        'Supabase 환경 변수가 없습니다. .env의 VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY를 확인한 뒤 npm run dev를 다시 시작하세요.'
+      )
+      return undefined
+    }
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
