@@ -863,6 +863,20 @@ body {
   line-height: 1.55;
 }
 
+.hero-stat {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.hero-stat strong {
+  color: var(--result-lead);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .form-section {
   animation: rise 0.75s ease 0.12s both;
 }
@@ -1175,6 +1189,61 @@ body {
   gap: 0.95rem;
 }
 
+.guest-hint {
+  margin: 0 0 1.15rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.result-paywall {
+  position: relative;
+  margin-top: 0.4rem;
+}
+
+.result-locked {
+  max-height: 11.5rem;
+  overflow: hidden;
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.5;
+  mask-image: linear-gradient(180deg, #000 10%, transparent 92%);
+}
+
+.result-paywall-card {
+  position: relative;
+  z-index: 1;
+  margin-top: -4.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1.2rem 1rem 1.15rem;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.result-paywall-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.result-paywall-sub {
+  margin: 0 0 0.3rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
 .result-actions {
   margin-top: 1.75rem;
   padding-top: 1.25rem;
@@ -1184,6 +1253,14 @@ body {
   gap: 0.55rem;
 }
 
+.result-share-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.result-share-btn,
+.result-download-btn,
 .result-new-btn,
 .result-update-btn,
 .result-delete-btn {
@@ -1194,9 +1271,16 @@ body {
   font-family: inherit;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, filter 0.2s ease;
 }
 
+.result-share-btn {
+  color: var(--on-accent);
+  background: var(--accent);
+  border: none;
+}
+
+.result-download-btn,
 .result-new-btn,
 .result-update-btn {
   color: var(--ink);
@@ -1214,23 +1298,95 @@ body {
   border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line));
 }
 
+.result-share-btn:hover:not(:disabled),
+.result-download-btn:hover:not(:disabled),
 .result-new-btn:hover:not(:disabled),
 .result-update-btn:hover:not(:disabled),
 .result-delete-btn:hover:not(:disabled) {
-  background: var(--accent-soft);
   transform: translateY(-1px);
+}
+
+.result-share-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.result-download-btn:hover:not(:disabled),
+.result-new-btn:hover:not(:disabled),
+.result-update-btn:hover:not(:disabled) {
+  background: var(--accent-soft);
 }
 
 .result-delete-btn:hover:not(:disabled) {
   background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
 
+.result-share-btn:disabled,
+.result-download-btn:disabled,
 .result-new-btn:disabled,
 .result-update-btn:disabled,
 .result-delete-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+  filter: none;
+}
+
+.result-capture.is-capturing {
+  padding: 0.15rem 0.1rem 0.35rem;
+  border-radius: 18px;
+  background: var(--bg1);
+  backdrop-filter: none;
+}
+
+.result-capture-brand {
+  display: none;
+  margin: 1.4rem 0 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.result-capture.is-capturing .result-capture-brand {
+  display: block;
+}
+
+a.brand {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.page.is-share .login-gate {
+  position: relative;
+  z-index: 1;
+  width: min(720px, calc(100% - 0.5rem));
+  margin: 1.25rem auto 0;
+}
+
+.share-home-link {
+  position: relative;
+  z-index: 1;
+  width: min(720px, calc(100% - 0.5rem));
+  margin: 1.25rem auto 0;
+  text-align: center;
+}
+
+.share-home-link a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.share-home-link a:hover {
+  text-decoration: underline;
 }
 
 .result-heading {
