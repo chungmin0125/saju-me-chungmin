@@ -3,8 +3,10 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // .env 파일 + Netlify/Vercel 빌드 환경변수까지 읽습니다.
   const fileEnv = loadEnv(mode, process.cwd(), '')
+
+  // Netlify 등에서 GEMINI_API_KEY 만 넣은 경우도 VITE_ 로 읽히게 맞춤
+  // (import.meta.env.X 를 define으로 덮지 않음 — 다른 VITE_* 가 깨질 수 있음)
   const geminiKey =
     process.env.VITE_GEMINI_API_KEY ||
     process.env.GEMINI_API_KEY ||
@@ -12,12 +14,9 @@ export default defineConfig(({ mode }) => {
     fileEnv.GEMINI_API_KEY ||
     ''
 
-  const supabaseUrl =
-    process.env.VITE_SUPABASE_URL || fileEnv.VITE_SUPABASE_URL || ''
-  const supabasePublishableKey =
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    fileEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    ''
+  if (geminiKey) {
+    process.env.VITE_GEMINI_API_KEY = geminiKey
+  }
 
   if (mode === 'production' && !geminiKey) {
     console.warn(
@@ -25,7 +24,13 @@ export default defineConfig(({ mode }) => {
     )
   }
 
-  if (mode === 'production' && (!supabaseUrl || !supabasePublishableKey)) {
+  if (
+    mode === 'production' &&
+    !(
+      process.env.VITE_SUPABASE_URL ||
+      fileEnv.VITE_SUPABASE_URL
+    )
+  ) {
     console.warn(
       '[vite] VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY 가 없습니다. 배포 환경 변수를 확인하세요.'
     )
@@ -34,12 +39,6 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     envDir: process.cwd(),
-    // Gemini만 별칭(GEMINI_API_KEY)을 지원.
-    // Supabase VITE_* 는 define으로 덮지 않음 — 빈 값으로 고정되면 "환경 변수 없음" 오류가 납니다.
-    define: {
-      'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(geminiKey),
-    },
-    // 로컬: 브라우저 → Vite 프록시 → Google API (CORS 우회)
     server: {
       proxy: {
         '/api/gemini': {
