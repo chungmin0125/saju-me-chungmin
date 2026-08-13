@@ -1,6 +1,16 @@
+@font-face {
+  font-family: 'Ulsan Junggu';
+  src: url('./assets/fonts/ulsanjunggu.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ===== 테마 변수 (라이트 / 다크) ===== */
 :root,
 [data-theme='light'] {
+  --font-ui: 'IBM Plex Sans KR', sans-serif;
+  --font-display: 'Ulsan Junggu', serif;
   --bg0: #dfe8f4;
   --bg1: #f3f6fb;
   --void: #c8d4e6;
@@ -88,7 +98,7 @@ body,
 body {
   margin: 0;
   color: var(--ink);
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: var(--font-ui);
   background-color: var(--bg0);
   background-image:
     radial-gradient(ellipse 55% 45% at 72% 28%, var(--glow-a), transparent 70%),
@@ -136,7 +146,7 @@ body {
 
 .history-title {
   margin: 0;
-  font-family: 'Nanum Myeongjo', serif;
+  font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 700;
 }
@@ -171,6 +181,19 @@ body {
 .new-saju-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.history-empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: center;
+}
+
+.history-empty-wrap .mascot-sm {
+  width: 56px;
+  height: 56px;
 }
 
 .history-empty {
@@ -598,6 +621,8 @@ body {
   backdrop-filter: blur(12px);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 0.75rem;
   animation: rise 0.45s ease both;
   transition:
@@ -613,9 +638,191 @@ body {
   line-height: 1.5;
 }
 
+/* ===== 프로필 카드 ===== */
+.profile-card {
+  margin-bottom: 1.25rem;
+  padding: 1.15rem 1.15rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  animation: rise 0.55s ease both;
+  transition:
+    background-color 0.55s ease,
+    border-color 0.55s ease,
+    box-shadow 0.55s ease,
+    color 0.55s ease;
+}
+
+.profile-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.95rem;
+}
+
+.profile-card-eyebrow {
+  margin: 0 0 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--result-lead);
+}
+
+.profile-card-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.profile-edit-btn {
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: var(--field-bg);
+  color: var(--ink);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-edit-btn:hover:not(:disabled) {
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+.profile-edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 0.85rem;
+  margin: 0 0 1.1rem;
+}
+
+.profile-card-meta div:first-child {
+  grid-column: 1 / -1;
+}
+
+.profile-card-meta dt {
+  margin: 0 0 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.profile-card-meta dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.profile-card .analyze-btn {
+  margin-top: 0;
+}
+
+/* ===== 프로필 모달 ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: var(--overlay);
+  backdrop-filter: blur(12px);
+  animation: fade-in 0.25s ease both;
+}
+
+.modal-panel {
+  width: min(440px, 100%);
+  max-height: min(92vh, 760px);
+  overflow-y: auto;
+  padding: 1.5rem 1.25rem 1.35rem;
+  border-radius: 18px;
+  background: var(--field-bg);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+  animation: rise 0.35s ease both;
+  text-align: center;
+}
+
+.modal-eyebrow {
+  margin: 0.7rem 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--result-lead);
+  text-align: center;
+}
+
+.modal-panel .mascot-md {
+  margin: 0 auto;
+}
+
+.modal-form {
+  text-align: left;
+}
+
+.modal-title {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.modal-sub {
+  margin: 0 0 1.15rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.modal-form .field:last-of-type {
+  margin-bottom: 0.35rem;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.modal-actions .analyze-btn,
+.modal-actions .clear-btn {
+  width: 100%;
+  margin-top: 0;
+}
+
+.modal-footnote {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 .brand {
   margin: 0;
-  font-family: 'Nanum Myeongjo', serif;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -632,12 +839,17 @@ body {
 
 .hero {
   margin-bottom: 2rem;
+  text-align: center;
   animation: rise 0.7s ease 0.05s both;
+}
+
+.hero .mascot-lg {
+  margin: 0 auto 0.85rem;
 }
 
 .hero-title {
   margin: 0 0 0.55rem;
-  font-family: 'Nanum Myeongjo', serif;
+  font-family: var(--font-display);
   font-size: clamp(2.4rem, 8vw, 3.2rem);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -920,7 +1132,7 @@ body {
 
 .result-title {
   margin: 0 0 0.45rem;
-  font-family: 'Nanum Myeongjo', serif;
+  font-family: var(--font-display);
   font-size: clamp(1.45rem, 5vw, 1.85rem);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1023,7 +1235,7 @@ body {
 
 .result-heading {
   margin: 0.85rem 0 0.15rem;
-  font-family: 'Nanum Myeongjo', serif;
+  font-family: var(--font-display);
   font-weight: 700;
   color: var(--result-lead);
   line-height: 1.45;
@@ -1040,7 +1252,7 @@ body {
 
 .result-paragraph {
   margin: 0;
-  font-family: 'Nanum Myeongjo', serif;
+  font-family: var(--font-display);
   font-size: 1.05rem;
   line-height: 1.9;
   letter-spacing: 0.01em;
@@ -1060,7 +1272,7 @@ body {
 .result-list li {
   position: relative;
   padding-left: 1.15rem;
-  font-family: 'Nanum Myeongjo', serif;
+  font-family: var(--font-display);
   font-size: 1.02rem;
   line-height: 1.75;
   word-break: keep-all;
@@ -1101,6 +1313,85 @@ body {
   vertical-align: -0.04em;
 }
 
+/* ===== 마스코트 미 ===== */
+.mascot {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #0a1020;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 0 24px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.mascot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.mascot-brand {
+  width: 28px;
+  height: 28px;
+}
+
+.mascot-sm {
+  width: 52px;
+  height: 52px;
+}
+
+.mascot-md {
+  width: 72px;
+  height: 72px;
+}
+
+.mascot-lg {
+  width: min(148px, 42vw);
+  height: min(148px, 42vw);
+  animation: mascot-float 4.8s ease-in-out infinite;
+}
+
+.mascot-loading {
+  width: 92px;
+  height: 92px;
+}
+
+.mascot.is-reading {
+  animation: mascot-read 1.8s ease-in-out infinite;
+}
+
+@keyframes mascot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes mascot-read {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 0 18px color-mix(in srgb, var(--accent) 24%, transparent);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 0 28px color-mix(in srgb, var(--accent) 42%, transparent);
+  }
+}
+
 /* ===== 로딩 오버레이 ===== */
 .loading-overlay {
   position: fixed;
@@ -1137,9 +1428,13 @@ body {
   animation: pulse-orb 1.6s ease-in-out infinite;
 }
 
+.loading-panel .mascot-loading {
+  margin: 0 auto 1.05rem;
+}
+
 .loading-title {
   margin: 0 0 0.35rem;
-  font-family: 'Nanum Myeongjo', serif;
+  font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 700;
 }
@@ -1316,7 +1611,8 @@ body {
 }
 
 @media (max-width: 420px) {
-  .field-row {
+  .field-row,
+  .profile-card-meta {
     grid-template-columns: 1fr;
   }
 }
@@ -1330,7 +1626,9 @@ body {
   .blackhole-halo,
   .blackhole-shine,
   .orb,
-  .star {
+  .star,
+  .mascot-lg,
+  .mascot.is-reading {
     animation: none;
   }
 }
